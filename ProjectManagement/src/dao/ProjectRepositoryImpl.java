@@ -3,7 +3,7 @@ package dao;
 import entity.Employee;
 import entity.Project;
 import entity.Task;
-import util.DBConnUtil;
+import util.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,18 +11,22 @@ import java.util.List;
 
 public class ProjectRepositoryImpl implements IProjectRepository {
 
+    private final Connection connection;
+
+    public ProjectRepositoryImpl() {
+        this.connection = DBConnection.getConnection();
+    }
+
     @Override
     public boolean createEmployee(Employee emp) {
         String sql = "INSERT INTO Employee (name, designation, gender, salary, project_id) VALUES (?, ?, ?, ?, ?)";
-        try (Connection connection = DBConnUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, emp.getName());
             statement.setString(2, emp.getDesignation());
             statement.setString(3, emp.getGender());
             statement.setDouble(4, emp.getSalary());
             statement.setObject(5, emp.getProjectId(), Types.INTEGER);
-            int result = statement.executeUpdate();
-            return result > 0;
+            return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -32,14 +36,12 @@ public class ProjectRepositoryImpl implements IProjectRepository {
     @Override
     public boolean createProject(Project pj) {
         String sql = "INSERT INTO Project (project_name, description, start_date, status) VALUES (?, ?, ?, ?)";
-        try (Connection connection = DBConnUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, pj.getProjectName());
             statement.setString(2, pj.getDescription());
             statement.setString(3, pj.getStartDate());
             statement.setString(4, pj.getStatus());
-            int result = statement.executeUpdate();
-            return result > 0;
+            return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -49,14 +51,12 @@ public class ProjectRepositoryImpl implements IProjectRepository {
     @Override
     public boolean createTask(Task tk) {
         String sql = "INSERT INTO Task (task_name, project_id, employee_id, status) VALUES (?, ?, ?, ?)";
-        try (Connection connection = DBConnUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, tk.getTaskName());
             statement.setInt(2, tk.getProjectId());
             statement.setInt(3, tk.getEmployeeId());
             statement.setString(4, tk.getStatus());
-            int result = statement.executeUpdate();
-            return result > 0;
+            return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -66,12 +66,10 @@ public class ProjectRepositoryImpl implements IProjectRepository {
     @Override
     public boolean assignProjectToEmployee(int projectId, int employeeId) {
         String sql = "UPDATE Employee SET project_id = ? WHERE id = ?";
-        try (Connection connection = DBConnUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, projectId);
             statement.setInt(2, employeeId);
-            int result = statement.executeUpdate();
-            return result > 0;
+            return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -81,13 +79,11 @@ public class ProjectRepositoryImpl implements IProjectRepository {
     @Override
     public boolean assignTaskInProjectToEmployee(int taskId, int projectId, int employeeId) {
         String sql = "UPDATE Task SET employee_id = ? WHERE task_id = ? AND project_id = ?";
-        try (Connection connection = DBConnUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, employeeId);
             statement.setInt(2, taskId);
             statement.setInt(3, projectId);
-            int result = statement.executeUpdate();
-            return result > 0;
+            return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -97,11 +93,9 @@ public class ProjectRepositoryImpl implements IProjectRepository {
     @Override
     public boolean deleteEmployee(int userId) {
         String sql = "DELETE FROM Employee WHERE id = ?";
-        try (Connection connection = DBConnUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, userId);
-            int result = statement.executeUpdate();
-            return result > 0;
+            return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -111,11 +105,9 @@ public class ProjectRepositoryImpl implements IProjectRepository {
     @Override
     public boolean deleteProject(int projectId) {
         String sql = "DELETE FROM Project WHERE id = ?";
-        try (Connection connection = DBConnUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, projectId);
-            int result = statement.executeUpdate();
-            return result > 0;
+            return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -126,8 +118,7 @@ public class ProjectRepositoryImpl implements IProjectRepository {
     public List<Task> getAllTasks(int empId, int projectId) {
         List<Task> tasks = new ArrayList<>();
         String sql = "SELECT * FROM Task WHERE employee_id = ? AND project_id = ?";
-        try (Connection connection = DBConnUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, empId);
             statement.setInt(2, projectId);
             ResultSet rs = statement.executeQuery();
@@ -146,19 +137,16 @@ public class ProjectRepositoryImpl implements IProjectRepository {
         }
         return tasks;
     }
+
     @Override
     public boolean deleteTask(int taskId) {
         String query = "DELETE FROM Task WHERE task_id = ?";
-        try (Connection conn = DBConnUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, taskId);
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;  // Returns true if the task was deleted
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
-
 }

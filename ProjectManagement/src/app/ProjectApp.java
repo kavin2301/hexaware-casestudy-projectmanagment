@@ -1,6 +1,7 @@
 package app;
 
 import dao.ProjectRepositoryImpl;
+import util.DBConnection;
 import entity.Employee;
 import entity.Project;
 import entity.Task;
@@ -158,5 +159,10 @@ public class ProjectApp {
             }
 
         } while (choice != 9);
+
+        // Clean up resources after exiting
+        sc.close();
+        DBConnection.closeConnection();
+        System.out.println("Application terminated. DB connection closed.");
     }
 }
